@@ -406,10 +406,9 @@ if (isset($_GET['search_data']) && $_GET['search_data'] == 'stock_search_form') 
     $stock_todate     		=   (isset($_REQUEST['todate']) && !empty($_REQUEST['todate']) ? $_REQUEST['todate'] : '');
     $sql                    =   '';
     $where                  =   [];
-    $groupby                =   [];
     $where_sql_status       =   false;
     $receiveDataList        =   [];
-    $sql.="SELECT * FROM inv_materialbalance";
+    $sql.="SELECT * FROM inv_materialbalance INNER JOIN inv_material ON inv_material.material_id_code=inv_materialbalance.mb_materialid INNER JOIN inv_item_unit ON inv_item_unit.id=inv_material.qty_unit GROUP BY mb_materialid";
     $status     			=   'error';
     $message    			=   'No data found';
     $data       			=   '';
@@ -417,12 +416,10 @@ if (isset($_GET['search_data']) && $_GET['search_data'] == 'stock_search_form') 
     if(isset($stock_from_date) && !empty($stock_from_date)){
         $where_sql_status   =   true;
         $where[]			=" mb_date >='$stock_from_date' ";
-		$groupby[]			="mb_date";
     }
     if(isset($stock_todate) && !empty($stock_todate)){
         $where_sql_status   =   true;
         $where[]			=" mb_date <='$stock_todate' ";
-		$groupby[]			="mb_date";
     }
     
     if($where_sql_status){
@@ -454,7 +451,6 @@ if (isset($_GET['search_data']) && $_GET['search_data'] == 'stock_search_form') 
 				</thead>
                 <tbody>
 					<?php 
-					$slno = 1;
                     foreach ($stockDataList as $listData) {  
 					?>
 					<tr style="background-color: #BCC6CC;">
@@ -467,17 +463,20 @@ if (isset($_GET['search_data']) && $_GET['search_data'] == 'stock_search_form') 
 						<td>ID</td>
 						<td colspan="5"><?php echo $listData->mb_materialid; ?></td>
 					</tr>
-					
+					<?php 
+					$slno = 1;
+                    foreach ($stockDataList as $listData) {  
+					?>
 					<tr>
 						<td><span style="float:right"><?php echo $slno++; ?></span></td>
 						<td>ID</td>
-						<td><span style="float:right">Product Name</span></td>
-						<td>KG</td>
+						<td><span style="float:right"><?php echo $listData->material_description; ?></span></td>
+						<td><?php echo $listData->unit_name; ?></td>
 						<td><?php echo $listData->mbin_qty; ?></td>
 						<td><?php echo $listData->mbprice; ?></td>
 						<td><?php echo $listData->mbin_qty * $listData->mbprice ?></td>
 					</tr>
-					<?php  }?>
+					<?php  }}?>
 				</tbody>
             <?php } else { ?>
                 <thead>
